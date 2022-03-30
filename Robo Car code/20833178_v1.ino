@@ -93,23 +93,25 @@ void process_state(){
   if(robostate == initial){  // stop at init position
     wheelEngine(0, 0);
   }
+
   if(robostate == starting){ // go 0.35 sec after detecting bumper
-    wheelEngine(L_speed, R_speed, FORWARD);
-    countBumper++;
     if(time_inited == 0){
       start_tick = millis(); // get the starting time
       time_inited = 1; 
     }
+    countBumper++;
     if(auto_tick - time_inited <= 350){
       wheelEngine(L_speed, R_speed, FORWARD);
     }
   }
+
   if(robostate == ending){ // wall in front
     countBumper++;
     wheelEngine(L_speed, R_speed, BACKWARD);  
     delay(1000);
     wheelEngine(0, 0);
   }
+
   if(robostate == tracking){ // main tracking
     update_bang();
     if (!leftSensor && !rightSensor){ // nothing detected
