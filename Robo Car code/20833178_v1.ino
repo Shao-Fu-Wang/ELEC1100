@@ -113,7 +113,7 @@ void wheelEngine(int L_speed, int R_speed, bool L_dir = 1, bool R_dir = 1){
 }
 
 void determine_trackmode(){
-  if(abs(R_bang_time - L_bang_time) <= 333){ // determine split
+  if(abs(R_bang_time - L_bang_time) < 333){ // determine split
     countSplit++;
     robotrack = split;
   }
