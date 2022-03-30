@@ -55,7 +55,7 @@ int differential = 21; // for changing directions with pid
 int Kt = 3;
 
 void setup(){
-  Serial.begin(38400); // should be deleted
+  // Serial.begin(38400); // should be deleted
   pinMode(pinB_Sensor, INPUT);
   pinMode(pinL_Sensor, INPUT);
   pinMode(pinR_Sensor, INPUT);
@@ -164,8 +164,8 @@ void process_state(){
 
 void loop() { //main
   get_input();
-  Serial.println(auto_tick);
-  Serial.println(robostate);
+  // Serial.println(auto_tick);
+  // Serial.println(robostate);
   if(!bumperSensor && !countBumper){  
     robostate = initial;
   }
