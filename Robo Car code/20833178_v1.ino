@@ -100,9 +100,8 @@ void process_state(){
       time_inited = 1; 
     }
     countBumper++;
-    if(auto_tick - time_inited <= 350){
-      wheelEngine(L_speed, R_speed, FORWARD);
-    }
+    wheelEngine(L_speed, R_speed, FORWARD);
+    delay(350);
   }
 
   if(robostate == ending){ // wall in front
@@ -133,13 +132,13 @@ void process_state(){
 
 void loop() { //main
   get_input();
-  if (!bumperSensor && !countBumper){  
+  if(!bumperSensor && !countBumper){  
     robostate = initial;
   }
-  else if (bumperSensor && !countBumper){ 
+  else if(bumperSensor && !countBumper){ 
     robostate = starting;
   }
-  else if (bumperSensor && countBumper){
+  else if(bumperSensor && countBumper){
     robostate = ending;
   }
   else if(!bumperSensor && countBumper!=2){  
