@@ -25,6 +25,13 @@ int countBumper = 0;   // bumper count
 int countSplit = 0;   // split count
 
 //user define 
+enum states{
+  initial,
+  starting,
+  tracking,
+  ending
+};
+states robostate;
 bool time_inited = 0;
 unsigned long auto_tick = 0;
 unsigned long start_tick = 0;
@@ -82,12 +89,11 @@ void update_bang(){
   }
 }
 
-void loop() {
-  get_input();
-  if (!bumperSensor && !countBumper){ // stop at init position 
+void process_state(){
+  if(robostate == initial){  // stop at init position
     wheelEngine(0, 0);
   }
-  else if (bumperSensor && !countBumper){ // go 0.35 sec after detecting bumper
+  if(robostate == starting){ // go 0.35 sec after detecting bumper
     wheelEngine(L_speed, R_speed, FORWARD);
     countBumper++;
     if(time_inited == 0){
@@ -98,27 +104,44 @@ void loop() {
       wheelEngine(L_speed, R_speed, FORWARD);
     }
   }
-  else if (bumperSensor && countBumper){ // wall in front
+  if(robostate == ending){ // wall in front
     countBumper++;
     wheelEngine(L_speed, R_speed, BACKWARD);  
     delay(1000);
     wheelEngine(0, 0);
   }
-  else if(!bumperSensor && countBumper!=2){  // main tracking
+  if(robostate == tracking){ // main tracking
     update_bang();
-    // if (!leftSensor && !rightSensor){ // nothing detected
-    //     wheelEngine(L_speed, R_speed, FORWARD);
-    // }
-    // if (!leftSensor && rightSensor){  // turn right
-    //     wheelEngine(L_speed + 21, R_speed - 21, FORWARD);
-    // }
-    // if (leftSensor && !rightSensor){ // turn left
-    //     wheelEngine(L_speed - 21, R_speed + 21, FORWARD);
-    // }
-    // if (leftSensor && rightSensor){ // split
-    //     countSplit++;
-    //     wheelEngine(L_speed - 66, R_speed + 66, FORWARD);
-    //     delay(150);
-    // }
+    if (!leftSensor && !rightSensor){ // nothing detected
+        wheelEngine(L_speed, R_speed, FORWARD);
+    }
+    if (!leftSensor && rightSensor){  // turn right
+        wheelEngine(L_speed + 21, R_speed - 21, FORWARD);
+    }
+    if (leftSensor && !rightSensor){ // turn left
+        wheelEngine(L_speed - 21, R_speed + 21, FORWARD);
+    }
+    if (leftSensor && rightSensor){ // split
+        countSplit++;
+        wheelEngine(L_speed - 66, R_speed + 66, FORWARD);
+        delay(150);
+    }
   }
+}
+
+void loop() { //main
+  get_input();
+  if (!bumperSensor && !countBumper){  
+    robostate = initial;
+  }
+  else if (bumperSensor && !countBumper){ 
+    robostate = starting;
+  }
+  else if (bumperSensor && countBumper){
+    robostate = ending;
+  }
+  else if(!bumperSensor && countBumper!=2){  
+    robostate = tracking;
+  }
+  process_state();
 }
