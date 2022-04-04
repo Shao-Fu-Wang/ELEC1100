@@ -51,7 +51,7 @@ int init_L_speed = 150;
 int init_R_speed = 150;
 int L_speed = 150;
 int R_speed = 150;
-int differential = 21; // for changing directions with pid
+int differential = 66; // for changing directions with pid
 int Kt = 3;
 
 void setup(){
@@ -158,7 +158,7 @@ void process_state(){
       wheelEngine(L_speed, R_speed, turnmap[countSplit], 1-turnmap[countSplit]);
       delay(333);
     }
-    wheelEngine(L_speed, R_speed, FORWARD, FORWARD);
+    wheelEngine(L_speed, R_speed, FORWARD, FORWARD); //L_speed>=R_speed, R_speed>=L_speed);
   }
 }
 
