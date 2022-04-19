@@ -2,6 +2,5 @@
     "configuration": "cpu=atmega328",
     "board": "arduino:avr:nano",
     "programmer": "arduino:avrisp",
-    "port": "COM13",
-    "sketch": "20833178_v1.ino"
+    "sketch": "20833178_v2.ino"
 }

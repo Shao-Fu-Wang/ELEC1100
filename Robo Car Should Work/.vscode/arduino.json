@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:nano",
+    "programmer": "arduino:avrisp",
+    "sketch": "I_hate_macros.ino",
+    "configuration": "cpu=atmega328old"
+}

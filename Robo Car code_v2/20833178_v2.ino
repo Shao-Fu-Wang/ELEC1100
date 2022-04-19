@@ -22,7 +22,7 @@ int bumperSensor = 0;  // 0 = not sensing white
 int leftSensor = 0;    // 0 = not sensing white
 int rightSensor = 0;   // 0 = not sensing white
 int countBumper = 0;   // bumper count
-int countSplit = -1;   // split count
+int countSplit = 0;   // split count
 
 //user define 
 enum states{
@@ -36,23 +36,27 @@ enum trackMode{
   turnLeft,
   turnRight,
   split,
+  angleturn
+};
+enum position{
+  firsthalf,
+  secondhalf
 };
 states robostate = initial;
 trackMode robotrack = straight;
-// bool time_inited = 0; // use for timestamp, remember to set it back to 0
-// bool countSplit_added = 0;  // use for adding countSplit, remember to set it back to 0
+trackMode lastTrackMode = straight;
+position roboposition = firsthalf;
+bool trackModeChanged = 0;
 unsigned long auto_tick = 0;
 unsigned long timestamp = 0;
 unsigned long R_bang_time = 0;
 unsigned long L_bang_time = 0;
 // need tuning
-int turnmap[3] = {0, 0, 0};  // 0 for turnleft 
 int init_L_speed = 150;
 int init_R_speed = 150;
 int L_speed = 150;
 int R_speed = 150;
-int differential = 66; // for changing directions with pid
-int Kt = 3;
+double differential = 66; // for changing directions with pid
 
 void setup(){
   // Serial.begin(38400); // should be deleted
@@ -113,22 +117,46 @@ void wheelEngine(int L_speed, int R_speed, bool L_dir = 1, bool R_dir = 1){
 }
 
 void determine_trackmode(){
-  if(abs(R_bang_time - L_bang_time) < 140){ // determine split
-    countSplit++;
-    robotrack = split;
+  trackModeChanged = 0;
+  lastTrackMode = robotrack;
+  if(roboposition == firsthalf){
+    if(abs(R_bang_time - L_bang_time) < 21){ // determine split
+      countSplit++;
+      robotrack = split;
+    }
+    else if(!leftSensor && rightSensor){  // turn right
+      robotrack = turnRight;
+    }
+    else if(leftSensor && !rightSensor){  // turn left
+      robotrack = turnLeft;
+    }
+    else if(!leftSensor && !rightSensor){  // go straight
+      robotrack = straight;
+    }
   }
-  else if(!leftSensor && rightSensor){  // turn right
-    robotrack = turnRight;
+  if(roboposition == secondhalf){
+    if(!leftSensor && rightSensor){  // turn right
+      robotrack = turnRight;
+    }
+    else if(leftSensor && !rightSensor){  // turn left
+      robotrack = turnLeft;
+    }
+    else if(!leftSensor && !rightSensor){  // go straight
+      robotrack = straight;
+    }
   }
-  else if(leftSensor && !rightSensor){  // turn left
-    robotrack = turnLeft;
+  if(lastTrackMode != robotrack){
+    trackModeChanged = 1;
   }
-  else if(!leftSensor && rightSensor){  // go straight
-    robotrack = straight;
-  } 
 }
 
 void process_state(){
+  if(countSplit == 3){
+    roboposition = secondhalf;
+    countSplit++;
+    wheelEngine(0, 0);
+    delay(999);
+  }
   if(robostate == initial){  // stop at init position
     wheelEngine(0, 0);
   }
@@ -146,26 +174,61 @@ void process_state(){
   if(robostate == tracking){ // main tracking
     update_bang();
     determine_trackmode();
-    L_speed = init_L_speed;
-    R_speed = init_R_speed;
-    if(robotrack == turnLeft){
-      R_speed += differential;
+    if(trackModeChanged){
+      L_speed = init_L_speed;
+      R_speed = init_R_speed;
     }
-    if(robotrack == turnRight){
-      L_speed += differential;
+    if(roboposition == firsthalf){
+      if(robotrack == turnLeft){
+        L_speed -= differential;
+        R_speed += differential;
+      }
+      if(robotrack == turnRight){
+        L_speed += differential;
+        R_speed -= differential;
+      }
+      if(robotrack == split){ // turnmap 0 == turnleft
+        while(true){
+          leftSensor = !digitalRead(pinL_Sensor);
+          rightSensor = !digitalRead(pinR_Sensor);
+          wheelEngine(L_speed, R_speed, BACKWARD, FORWARD);
+          if(!leftSensor and !rightSensor){
+            break;
+          }
+        }
+      }
+      wheelEngine(L_speed, R_speed, FORWARD, FORWARD); 
     }
-    if(robotrack == split){ // turnmap 0 == turnleft
-      wheelEngine(L_speed, R_speed, turnmap[countSplit], 1-turnmap[countSplit]);
-      delay(333);
+    else if(roboposition == secondhalf){
+      if(robotrack == turnLeft){
+        while(true){
+          leftSensor = !digitalRead(pinL_Sensor);
+          rightSensor = !digitalRead(pinR_Sensor);
+          wheelEngine(L_speed, R_speed, BACKWARD, FORWARD);
+          if(!leftSensor and !rightSensor == 0){
+            break;
+          }
+        }
+      }
+      if(robotrack == turnRight){
+        while(true){
+          leftSensor = !digitalRead(pinL_Sensor);
+          rightSensor = !digitalRead(pinR_Sensor);
+          wheelEngine(L_speed, R_speed, BACKWARD, FORWARD);
+          if(!leftSensor and !rightSensor == 0){
+            break;
+          }
+        }
+      }
+      if(robotrack == straight){
+        wheelEngine(L_speed, R_speed, FORWARD, FORWARD);
+      }
     }
-    wheelEngine(L_speed, R_speed, FORWARD, FORWARD); //L_speed>=R_speed, R_speed>=L_speed);
   }
 }
 
 void loop() { //main
   get_input();
-  // Serial.println(auto_tick);
-  // Serial.println(robostate);
   if(!bumperSensor && !countBumper){  
     robostate = initial;
   }
