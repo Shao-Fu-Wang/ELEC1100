@@ -6,19 +6,17 @@
 #define pinL_DIR (10)         //pin D10: left motor direction
 #define pinR_PWM (11)         //pin D11: right motor speed
 #define pinR_DIR (12)         //pin D12: right motor direction
-// self define
-#define cap_speedlimit(quantityA, quantityB, minvalue, maxvalue)  if(quantityA > maxvalue) quantityA = maxvalue;  if(quantityB > maxvalue) quantityB = maxvalue; if(quantityA < minvalue)  quantityA = minvalue; if(quantityB < minvalue) quantityB = minvalue
 #define forward (1)
 #define backward (0)
 
 bool leftSensor = 1;
 bool rightSensor = 1;
 bool bumpSensor = 1;
-uint8_t bumpcount = 0;
-uint8_t splitCount = 0;
-int32_t wheelSpeed = 200; // using int32_t in case number over 255
-bool split;
-bool prevsplit;
+int bumpcount = 0;
+int splitCount = 0;
+int wheelSpeed = 180; 
+bool split = false;
+bool prevsplit = false;
 enum state{
   stoping,
   tracking,
@@ -33,14 +31,9 @@ void setup (){
   pinMode(pinR_DIR, OUTPUT);
   pinMode(pinL_PWM, OUTPUT);
   pinMode(pinR_PWM, OUTPUT);
-  digitalWrite(pinL_DIR, HIGH);   //forward direction    
-  digitalWrite(pinR_DIR, HIGH);   //forward direction
-  analogWrite(pinL_PWM, 0);    //forward speed 
-  analogWrite(pinR_PWM, 0);    //forward speed 
 }
 
-void gogogo(uint8_t lSpeed, uint8_t rSpeed, bool lDir = forward, bool rDir = forward){
-  cap_speedlimit(lSpeed, rSpeed, 0, 255);
+void gogogo(int lSpeed, int rSpeed, bool lDir, bool rDir){
   analogWrite(pinL_PWM, lSpeed);
   analogWrite(pinR_PWM, rSpeed);
   digitalWrite(pinL_DIR, lDir);
@@ -49,7 +42,7 @@ void gogogo(uint8_t lSpeed, uint8_t rSpeed, bool lDir = forward, bool rDir = for
 
 void loop(){
   leftSensor = digitalRead(pinL_Sensor);  rightSensor = digitalRead(pinR_Sensor); bumpSensor = digitalRead(pinB_Sensor);
-  if(cur_state == stoping){ gogogo(0, 0); } //stoping
+  if(cur_state == stoping){ gogogo(0, 0, forward, forward); } //stoping
   if(!bumpSensor){  // starting and ending
     if(!bumpcount){
       cur_state = tracking;
@@ -63,22 +56,25 @@ void loop(){
       delay(1100);
     }
   }
-  if(cur_state == tracking){
+  else if(cur_state == tracking){
     if(!leftSensor && !rightSensor){  // split
         split = true;
-        if(splitCount <= 3){  // in case miscount more splits, do nothing when splitCount is 4
-          gogogo(wheelSpeed-50, wheelSpeed, backward, forward);
+        if(splitCount <= 2){  
+          gogogo(wheelSpeed, wheelSpeed+66, backward, forward);
           delay(200); 
         }
-        if(splitCount == 3){  delay(1000);  } // stop at the third stop
+        if(splitCount == 2){  
+          gogogo(0, 0, forward, forward);
+          delay(1000);  
+        }
     }
     else{ // not split
       split = false;
-      if(!leftSensor && rightSensor){ gogogo(wheelSpeed, wheelSpeed, backward, forward); } // go left
-      if(leftSensor && !rightSensor){ gogogo(wheelSpeed, wheelSpeed, forward, backward); } // go right
+      if(!leftSensor && rightSensor){ gogogo(wheelSpeed+66, wheelSpeed+66, backward, forward); } // go left
+      if(leftSensor && !rightSensor){ gogogo(wheelSpeed+66, wheelSpeed+66, forward, backward); } // go right
       if(leftSensor && rightSensor) { gogogo(wheelSpeed, wheelSpeed, forward, forward); } // go forward
     }
-    if (!split && prevsplit){ splitCount++; }
+    if (split == false && prevsplit == true){ splitCount++; }
     prevsplit = split;  // update splitting status
   }
 }

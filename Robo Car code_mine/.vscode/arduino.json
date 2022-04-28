@@ -2,5 +2,5 @@
     "configuration": "cpu=atmega328",
     "board": "arduino:avr:nano",
     "programmer": "arduino:avrisp",
-    "sketch": "20833178_v2.ino"
+    "sketch": "without_right_angle_control.ino"
 }

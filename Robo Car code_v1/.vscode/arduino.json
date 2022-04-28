@@ -1,6 +1,0 @@
-{
-    "configuration": "cpu=atmega328old",
-    "board": "arduino:avr:nano",
-    "programmer": "arduino:avrisp",
-    "sketch": "20833178_v1.ino"
-}
