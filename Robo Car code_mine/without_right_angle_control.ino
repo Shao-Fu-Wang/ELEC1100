@@ -8,6 +8,11 @@
 #define pinR_DIR (12)         //pin D12: right motor direction
 #define forward (1)
 #define backward (0)
+#define pwm_limit(l, r, min, max)  \
+          if(l > max) l = max;  \
+          if(r > max) r = max;  \
+          if(l < min)  l = min; \
+          if(r < min) r = min
 
 bool leftSensor = 1;
 bool rightSensor = 1;

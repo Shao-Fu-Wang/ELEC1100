@@ -17,7 +17,11 @@ uint8_t ohSoFuckingFast = 180;
 uint32_t imheretoeatmemory = 0;
 uint32_t makeit100lines = 0;
 
-#define cap_speedlimit(quantityA, quantityB, minvalue, maxvalue)  if(quantityA > maxvalue) quantityA = maxvalue;  if(quantityB > maxvalue) quantityB = maxvalue; if(quantityA < minvalue)  quantityA = minvalue; if(quantityB < minvalue) quantityB = minvalue
+#define pwm_limit(l, r, min, max)  \
+          if(l > max) l = max;  \
+          if(r > max) r = max;  \
+          if(l < min)  l = min; \
+          if(r < min) r = min
 #define track 6
 #define stop 9
 #define ROBOSTATE \
