@@ -19,7 +19,7 @@ bool rightSensor = 1;
 bool bumpSensor = 1;
 int bumpcount = 0;
 int splitCount = 0;
-int wheelSpeed = 180; 
+int wheelSpeed = 210; 
 bool split = false;
 bool prevsplit = false;
 enum state{
@@ -65,8 +65,8 @@ void loop(){
     if(!leftSensor && !rightSensor){  // split
         split = true;
         if(splitCount <= 2){  
-          gogogo(wheelSpeed, wheelSpeed+66, backward, forward);
-          delay(200); 
+          gogogo(255, 255, backward, forward);
+          delay(150); 
         }
         if(splitCount == 2){  
           gogogo(0, 0, forward, forward);
@@ -75,8 +75,8 @@ void loop(){
     }
     else{ // not split
       split = false;
-      if(!leftSensor && rightSensor){ gogogo(wheelSpeed+66, wheelSpeed+66, backward, forward); } // go left
-      if(leftSensor && !rightSensor){ gogogo(wheelSpeed+66, wheelSpeed+66, forward, backward); } // go right
+      if(!leftSensor && rightSensor){ gogogo(255, 255, backward, forward); } // go left
+      if(leftSensor && !rightSensor){ gogogo(255, 255, forward, backward); } // go right
       if(leftSensor && rightSensor) { gogogo(wheelSpeed, wheelSpeed, forward, forward); } // go forward
     }
     if (split == false && prevsplit == true){ splitCount++; }
